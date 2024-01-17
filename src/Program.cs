@@ -1,5 +1,5 @@
-﻿using dotenv.net;
-using DSharpPlus;
+﻿using DSharpPlus;
+using DSharpPlus.SlashCommands;
 
 namespace DiscordSoundboard
 {
@@ -7,21 +7,17 @@ namespace DiscordSoundboard
 	{
 		static async Task Main(string[] args)
 		{
-			DotEnv.Load();
-			IDictionary<string, string> envVars = DotEnv.Read();
+			Config.AppSettings appSettings = Config.GetConfigSettings();
 
-			var discord = new DiscordClient(new DiscordConfiguration()
+			DiscordClient? discord = new DiscordClient(new DiscordConfiguration()
 			{
-				Token = envVars["DISCORD_TOKEN"],
+				Token = appSettings.DiscordSettings.Token,
 				TokenType = TokenType.Bot,
 				Intents = DiscordIntents.AllUnprivileged | DiscordIntents.MessageContents
 			});
 
-			discord.MessageCreated += async (s, e) =>
-			{
-				if (e.Message.Content.ToLower().StartsWith("ping"))
-					await e.Message.RespondAsync("pong!");
-			};
+			SlashCommandsExtension slashCommands = discord.UseSlashCommands();
+			slashCommands.RegisterCommands<SlashCommands>(appSettings.DiscordSettings.GuildID);
 
 			await discord.ConnectAsync();
 			await Task.Delay(-1);
