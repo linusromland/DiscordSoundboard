@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # AppSettings Configuration File
 appsettings.json
+
+sounds/*
+!sounds/.gitkeep
