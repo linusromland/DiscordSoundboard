@@ -34,7 +34,7 @@ namespace DiscordSoundboard
 
 			IConfiguration config = new ConfigurationBuilder()
 				.SetBasePath(basePath)
-				.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
 				.Build();
 
 			string? discordToken = config["Discord:Token"];
