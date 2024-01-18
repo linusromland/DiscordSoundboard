@@ -1,4 +1,5 @@
 
+using System.Diagnostics;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.SlashCommands;
@@ -37,16 +38,41 @@ namespace DiscordSoundboard
 
 			try
 			{
-				File.WriteAllBytes(filePath, await new HttpClient().GetByteArrayAsync(file.Url));
+				byte[] fileTask = await new HttpClient().GetByteArrayAsync(file.Url);
+
+				// Convert to mp3 with normalized volume
+				using (var ffmpeg = new Process())
+				{
+					ffmpeg.StartInfo.FileName = "ffmpeg";
+					ffmpeg.StartInfo.Arguments = $"-i pipe:0 -ss 00:00:00 -t 10 -af loudnorm -f mp3 \"{filePath}\"";
+					ffmpeg.StartInfo.UseShellExecute = false;
+					ffmpeg.StartInfo.RedirectStandardInput = true;
+					ffmpeg.StartInfo.RedirectStandardOutput = false;
+					ffmpeg.StartInfo.RedirectStandardError = false;
+
+					ffmpeg.Start();
+
+					await ffmpeg.StandardInput.BaseStream.WriteAsync(fileTask, 0, fileTask.Length);
+					ffmpeg.StandardInput.Close();
+
+					ffmpeg.WaitForExit();
+				}
+
+
+
 				await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Added sound {name}"));
+
 
 				// Send the soundboard
 				SendSoundboard(ctx.Channel);
 			}
-			catch (System.Exception e)
+			catch (Exception e)
 			{
 				Console.WriteLine(e);
 				await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent("Failed to add sound"));
+
+				// Send the soundboard
+				SendSoundboard(ctx.Channel);
 				return;
 			}
 		}
