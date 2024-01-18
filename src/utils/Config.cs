@@ -40,9 +40,15 @@ namespace DiscordSoundboard
 			string? discordToken = config["Discord:Token"];
 			string? discordGuildID = config["Discord:GuildID"];
 
+			if(discordToken == null)
+			{
+				discordToken = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
+			}
+
 			if (discordToken == null)
 			{
-				throw new Exception("Discord token not found in config.json");
+
+				throw new Exception("Discord token not found in config.json or DISCORD_TOKEN environment variable");
 			}
 
 			if (discordGuildID != null && !ulong.TryParse(discordGuildID, out ulong _))
