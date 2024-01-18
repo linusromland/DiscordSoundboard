@@ -8,6 +8,8 @@ namespace DiscordSoundboard
 {
 	class InteractionHandler
 	{
+		private static System.Timers.Timer? timeoutTimer;
+
 		public static async Task HandleInteraction(DiscordClient client, ComponentInteractionCreateEventArgs e)
 		{
 			await e.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
@@ -69,6 +71,16 @@ namespace DiscordSoundboard
 
 			await vnc.WaitForPlaybackFinishAsync();
 
+			timeoutTimer?.Dispose();
+			timeoutTimer = new System.Timers.Timer(5 * 60 * 1000);
+			timeoutTimer.Elapsed += (sender, args) =>
+			{
+
+				vnc?.Disconnect();
+				timeoutTimer?.Dispose();
+				timeoutTimer = null;
+			};
+			timeoutTimer.Start();
 		}
 
 
