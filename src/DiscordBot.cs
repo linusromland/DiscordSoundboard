@@ -2,6 +2,7 @@ using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.SlashCommands;
+using DSharpPlus.VoiceNext;
 
 namespace DiscordSoundboard
 {
@@ -21,11 +22,12 @@ namespace DiscordSoundboard
 			SlashCommandsExtension slashCommands = discordClient.UseSlashCommands();
 			slashCommands.RegisterCommands<SlashCommands>(appSettings.DiscordSettings.GuildID);
 			discordClient.ComponentInteractionCreated += InteractionHandler.HandleInteraction;
+			discordClient.UseVoiceNext();
 
-			// On button press
-			discordClient.Ready += async (client, args) =>
+			discordClient.Ready += (client, args) =>
 			{
 				Console.WriteLine($"Connected to Discord as {client.CurrentUser.Username}#{client.CurrentUser.Discriminator}");
+				return Task.CompletedTask;
 			};
 
 			discordClient.ConnectAsync(new DiscordActivity("with sounds", ActivityType.Playing));
